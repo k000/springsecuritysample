@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.11.13:5432/mytest
+    username: kamado
+    password: tanzirou
+  
