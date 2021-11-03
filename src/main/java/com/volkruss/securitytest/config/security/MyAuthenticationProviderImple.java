@@ -2,7 +2,9 @@ package com.volkruss.securitytest.config.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,8 +14,14 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.volkruss.securitytest.domain.entity.auth.UserEntity;
+import com.volkruss.securitytest.domain.repository.UserRepository;
+
 @Configuration
 public class MyAuthenticationProviderImple implements AuthenticationProvider {
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -21,15 +29,27 @@ public class MyAuthenticationProviderImple implements AuthenticationProvider {
 		String username = authentication.getName();
 		String password = (String)authentication.getCredentials();
 		
-		// TODO DB認証をする場合は、ここでリポジトリからユーザー情報を取得してパスワードの整合性をチェックする。
-		//　認可も付与します。
+		// DB認証をする場合は、ここでリポジトリからユーザー情報を取得してパスワードの整合性をチェックする。
+		Collection<GrantedAuthority> authorities = new ArrayList<>();
+		Optional<UserEntity> opt = userRepository.findByUserName(username);
+		if(opt.isEmpty()) {
+			throw new BadCredentialsException("Authentication Error");
+		}
+		if(password.equals(opt.get().getPassword())) {
+			// TODO 認可の取得を行う
+			authorities.add(new SimpleGrantedAuthority("USER"));
+		}else {
+			throw new BadCredentialsException("Authentication Error");
+		}
+		//　認可も付与します。	
+		/*
 		Collection<GrantedAuthority> authorities = new ArrayList<>();
 		if (username.equals("rengoku") && password.equals("kyojurou")) {
 			authorities.add(new SimpleGrantedAuthority("USER"));
 		} else {
 			throw new BadCredentialsException("Authentication Error");
 		}
-		
+		*/
 		return new UsernamePasswordAuthenticationToken(username, password,authorities);
 	}
 
