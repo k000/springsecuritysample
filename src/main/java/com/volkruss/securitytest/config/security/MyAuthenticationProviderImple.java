@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,12 +14,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.volkruss.securitytest.domain.entity.auth.UserEntity;
 import com.volkruss.securitytest.domain.repository.UserRepository;
 
 @Configuration
 public class MyAuthenticationProviderImple implements AuthenticationProvider {
+	
+	@Bean
+	public PasswordEncoder passwordEncorder() {
+		return new BCryptPasswordEncoder();
+	}
 	
 	@Autowired
 	private UserRepository userRepository;
@@ -35,7 +43,8 @@ public class MyAuthenticationProviderImple implements AuthenticationProvider {
 		if(opt.isEmpty()) {
 			throw new BadCredentialsException("Authentication Error");
 		}
-		if(password.equals(opt.get().getPassword())) {
+		PasswordEncoder encoder = passwordEncorder();
+		if(encoder.matches(password,opt.get().getPassword())) {
 			// TODO 認可の取得を行う
 			authorities.add(new SimpleGrantedAuthority("USER"));
 		}else {
