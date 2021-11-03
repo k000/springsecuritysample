@@ -7,4 +7,5 @@ import com.volkruss.securitytest.domain.entity.auth.UserEntity;
 public interface UserRepository {
 	// 直接エンティティを返してしまっています
 	Optional<UserEntity> findByUserName(String username);
+	boolean saveUser(String username,String password);
 }
